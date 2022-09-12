@@ -6,6 +6,9 @@ using System;
 using System.Linq;
 using System.Text;
 using System.IO;
+using UnityEngine.Events;
+using System.Xml;
+using UnityEngine.Networking;
 
 public class GameManager : MonoBehaviour
 {
@@ -23,22 +26,25 @@ public class GameManager : MonoBehaviour
     int i = 0;
     int lineIndex = 0;
     int firstWord;
-    
+    [SerializeField]
+    TextResource textResource;
+    string[] allLines;
+    Vector2 originalTextPosition;
     private void Awake()
     {
+        allLines = textResource.text.Split();
         _transcript.text = GetWords();
 
     }
-
     private string GetWords()
     {
-        string[] allLines = File.ReadAllLines("Assets/Resources/randomWords.txt");
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < maxWords; i++)
         {
             var randWord = allLines[UnityEngine.Random.Range(0, allLines.Length)] + " ";
             if (!sb.ToString().Contains(randWord))
                 sb.Append(allLines[UnityEngine.Random.Range(0, allLines.Length)] + " ");
+
         }
         return sb.ToString();
     }
@@ -47,7 +53,7 @@ public class GameManager : MonoBehaviour
     {
         words = _transcript.text.Split(' ').ToList();
         _currentWord = words[0];
-
+        originalTextPosition = _transcript.transform.localPosition;
     }
 
     private void PopulateChars()
@@ -68,8 +74,7 @@ public class GameManager : MonoBehaviour
             i = 0;
             return;
         }
-        if (isStringEmpty(_playerInput.text))
-            Debug.Log(_currentWord);
+        
         if (!isStringEmpty(_playerInput.text) && _playerInput.text[_playerInput.text.Length - 1] == ' ')
         {
             i++;
@@ -133,6 +138,18 @@ public class GameManager : MonoBehaviour
     
     public void FinishGame()
     {
+        _transcript.text = GetWords();
+        score.ResetScore();
+        if(_playerInput.text != "")
+        {
+            _playerInput.text = "";
+        }
+        words = _transcript.text.Split(' ').ToList();
+        _currentWord = words[0];
+        firstWord = 0;
+        lineIndex = 0;
+        chars = new List<char>();
+        _transcript.transform.localPosition = originalTextPosition;
 
     }
 }
