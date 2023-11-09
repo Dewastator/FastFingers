@@ -9,11 +9,12 @@ public class Timer : MonoBehaviour
 {
     [SerializeField]
     float timer = 120;
-    float timepassed = 0;
+    float timepassed = 1;
     [SerializeField]
     TMP_Text timerText;
     public UnityEvent OnTimeElapsed;
     float startTimer;
+
     private void Start()
     {
         startTimer = timer;
@@ -25,7 +26,7 @@ public class Timer : MonoBehaviour
     }
     IEnumerator TimerAnimation()
     {
-        while(timer != 0)
+        while(timer != -1)
         {
             if (Time.time > timepassed)
             {
@@ -38,7 +39,7 @@ public class Timer : MonoBehaviour
     }
     public string FormatTime(float time)
     {
-        if(time == 0)
+        if(time == -1)
         {
             OnTimeElapsed.Invoke();
             return string.Format("{0:00}", 0);

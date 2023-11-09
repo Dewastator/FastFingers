@@ -9,13 +9,20 @@ using System.IO;
 using UnityEngine.Events;
 using System.Xml;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
     [SerializeField]
+    Button languageButton;
+    [SerializeField]
     private TMP_InputField _playerInput;
     [SerializeField]
     private TMP_Text _transcript;
+    [SerializeField]
+    private TMP_Text _wrongTranscript;
+    [SerializeField]
+    private TMP_Text keystrokesText;
     [SerializeField]
     Score score;
     private string _currentWord;
@@ -27,23 +34,39 @@ public class GameManager : MonoBehaviour
     int lineIndex = 0;
     int firstWord;
     [SerializeField]
-    TextResource textResource;
+    Dictionary<string, TextResource> textResources = new Dictionary<string, TextResource>();
+    [SerializeField]
+    List<TextResource> listOfResources = new List<TextResource>();
     string[] allLines;
     Vector2 originalTextPosition;
+    public string currentLanguage;
+    StringBuilder allWords = new StringBuilder();
+    StringBuilder allCorrectWords = new StringBuilder();
+    StringBuilder allFalseWords = new StringBuilder();
+    public List<string> allWordsTyped = new List<string>();
+    int falseIndex;
+    bool isWrongText;
     private void Awake()
     {
-        allLines = textResource.text.Split();
-        _transcript.text = GetWords();
-
+        foreach(TextResource text in listOfResources)
+        {
+            textResources.Add(text.language, text);
+        }
+        _transcript.text = GetWords("English");
+        _wrongTranscript.text = _transcript.text;
     }
-    private string GetWords()
+    private string GetWords(string language)
     {
+        allLines = textResources[language].text.Split();
+
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < maxWords; i++)
         {
             var randWord = allLines[UnityEngine.Random.Range(0, allLines.Length)] + " ";
-            if (!sb.ToString().Contains(randWord))
-                sb.Append(allLines[UnityEngine.Random.Range(0, allLines.Length)] + " ");
+            if (!sb.ToString().Contains(randWord) && randWord.Length <= 7)
+            {
+                sb.Append(randWord);
+            }
 
         }
         return sb.ToString();
@@ -74,24 +97,58 @@ public class GameManager : MonoBehaviour
             i = 0;
             return;
         }
-        
+        HighlightText();
+        if(!isStringEmpty(_playerInput.text) && !Input.GetKey(KeyCode.Backspace))
+        {
+            score.allKeystrokes++;
+            keystrokesText.text = score.allKeystrokes.ToString();
+        }
         if (!isStringEmpty(_playerInput.text) && _playerInput.text[_playerInput.text.Length - 1] == ' ')
         {
             i++;
-            PaintWord(_playerInput.text.Trim(_playerInput.text[_playerInput.text.Length-1]) == _currentWord);
+            PaintWord(_playerInput.text.Trim(_playerInput.text[_playerInput.text.Length - 1]) == _currentWord);
             PopulateChars();
             _playerInput.text = "";
             words.RemoveAt(0);
             _currentWord = words.Count > 0 ? words[0] : "";
-            
-                
+            falseIndex = 0;
+            isWrongText = false;
         }
-        
+        NewLine();
+    }
+
+    private void HighlightText()
+    {
+        if (!isStringEmpty(_playerInput.text) && _currentWord.Length >= _playerInput.text.Length && _playerInput.text[_playerInput.text.Length - 1] != _currentWord[_playerInput.text.Length - 1] && !isWrongText)
+        {
+            _wrongTranscript.text = ReplaceFirstOccurrence(_wrongTranscript.text, words[0], "<mark=#FF0000>" + words[0] + "</mark>");
+            isWrongText = true;
+        }
+        if (_playerInput.text.Length > _currentWord.Length && _playerInput.text[_playerInput.text.Length - 1] != ' ' && !isWrongText)
+        {
+            _wrongTranscript.text = ReplaceFirstOccurrence(_wrongTranscript.text, words[0], "<mark=#FF0000>" + words[0] + "</mark>");
+            isWrongText = true;
+        }
+        if (!isStringEmpty(_playerInput.text) && _currentWord.Length >= _playerInput.text.Length &&  _currentWord.Contains(_playerInput.text) && isWrongText && _currentWord[0] == _playerInput.text[0])
+        {
+            _wrongTranscript.text = ReplaceFirstOccurrence(_wrongTranscript.text, "<mark=#FF0000>" + words[0] + "</mark>", words[0]);
+            isWrongText = false;
+        }
+        if (isStringEmpty(_playerInput.text) && isWrongText)
+        {
+            _wrongTranscript.text = ReplaceFirstOccurrence(_wrongTranscript.text, "<mark=#FF0000>" + words[0] + "</mark>", words[0]);
+            isWrongText = false;
+        }
+    }
+
+    private void NewLine()
+    {
         if (_transcript.textInfo.lineInfo[lineIndex].characterCount == chars.Count())
         {
             lineIndex++;
             chars = new List<char>();
             _transcript.transform.localPosition = new Vector2(_transcript.transform.localPosition.x, _transcript.transform.localPosition.y + 60f);
+            _wrongTranscript.transform.localPosition = new Vector2(_wrongTranscript.transform.localPosition.x, _wrongTranscript.transform.localPosition.y + 60f);
         }
     }
 
@@ -105,6 +162,8 @@ public class GameManager : MonoBehaviour
                 _transcript.text = ReplaceFirstOccurrence(_transcript.text, words[0], "<color=green>" + words[0] + "</color>");
 
             score.correctWords++;
+            allCorrectWords.Append(words[0] + " ");
+
         }
         else
         {
@@ -114,7 +173,11 @@ public class GameManager : MonoBehaviour
                 _transcript.text = ReplaceFirstOccurrence(_transcript.text, words[0], "<color=red>" + words[0] + "</color>");
 
             score.wrongWords++;
+            allFalseWords.Append(_playerInput.text + " ");
+            _wrongTranscript.text = ReplaceFirstOccurrence(_wrongTranscript.text, "<mark=#FF0000>" + words[0] + "</mark>", words[0]);
+
         }
+
         firstWord++;
     }
 
@@ -133,23 +196,40 @@ public class GameManager : MonoBehaviour
 
     public void EvaluateScore()
     {
+        score.allKeystrokes -= _playerInput.text.Length;
+        score.wpm = (((double)allCorrectWords.Length / 5) - (double)allFalseWords.Length) ;
+        score.accuracy = ((float)allCorrectWords.Length / score.allKeystrokes) * 100;
+        Debug.Log((double)allCorrectWords.Length);
+        Debug.Log((double)allFalseWords.Length);
+        Debug.Log(score.allKeystrokes);
+        Debug.Log(score.correctWords);
+        allWordsTyped.Add(allCorrectWords.ToString());
         score.SetScore();
     }
-    
+    public void ChangeLanguage(string language)
+    {
+        currentLanguage = language;
+        FinishGame();
+    }
     public void FinishGame()
     {
-        _transcript.text = GetWords();
+        isWrongText = false;
+        languageButton.interactable = true;
+        _transcript.text = GetWords(currentLanguage);
+        _wrongTranscript.text = _transcript.text;
         score.ResetScore();
-        if(_playerInput.text != "")
-        {
-            _playerInput.text = "";
-        }
         words = _transcript.text.Split(' ').ToList();
         _currentWord = words[0];
         firstWord = 0;
         lineIndex = 0;
         chars = new List<char>();
         _transcript.transform.localPosition = originalTextPosition;
-
+        _wrongTranscript.transform.localPosition = originalTextPosition;
+        allCorrectWords = new StringBuilder();
+        allFalseWords = new StringBuilder();
+        if (_playerInput.text != "")
+        {
+            _playerInput.text = "";
+        }
     }
 }

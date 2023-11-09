@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -9,19 +10,28 @@ public class Score : MonoBehaviour
     TMP_Text correctWordsText;
     [SerializeField]
     TMP_Text wrongWordsText;
-
+    [SerializeField]
+    TMP_Text wpmText;
+    [SerializeField]
+    TMP_Text accuracyText;
     public float correctWords;
     public float wrongWords;
-    
+    public double wpm;
+    public float correctKeystrokes;
+    public float allKeystrokes;
+    public float accuracy;
     public void SetScore()
     {
-        correctWordsText.text = "Correct words: " + correctWords.ToString();
-        wrongWordsText.text = "Wrong words: " + wrongWords.ToString();
+        wpmText.text = "<color=green>" + System.Math.Round(wpm).ToString() + "WPM"+ "</color>";
 
+        correctWordsText.text = "Correct words: " + "<color=green>" + correctWords.ToString() + "</color>";
+        wrongWordsText.text = "Wrong words: " + "<color=red>" + wrongWords.ToString() + "</color>";
+        accuracyText.text = "Accuracy " + String.Format("{0:.##}", accuracy) + "%";
     }
 
     public void ResetScore()
     {
-        correctWords = wrongWords = 0;
+        correctWords = wrongWords = accuracy = allKeystrokes = correctKeystrokes = 0;
+        wpm = 0;
     }
 }

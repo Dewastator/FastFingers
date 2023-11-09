@@ -6,5 +6,6 @@ using UnityEngine;
 
 public class TextResource : ScriptableObject
 {
+    public string language;
     public string text;
 }
