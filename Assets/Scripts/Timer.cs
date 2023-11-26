@@ -14,7 +14,7 @@ public class Timer : MonoBehaviour
     TMP_Text timerText;
     public UnityEvent OnTimeElapsed;
     float startTimer;
-
+    
     private void Start()
     {
         startTimer = timer;

@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b87f0707bf326584a82581632970642e, type: 3}
   m_Name: Pool
   m_EditorClassIdentifier: 
-  tag: Letter
-  poolPrefab: {fileID: 1098188952690004319, guid: cebc01112a6fff943a259f7381d658af, type: 3}
+  tag: Asteroid2
+  poolPrefab: {fileID: 100000, guid: 0af1ea802c96949188cadca9cbd36ac4, type: 3}
   size: 20

@@ -2958,6 +2958,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1629761274}
+        m_TargetAssemblyTypeName: ObjectSpawner, Assembly-CSharp
+        m_MethodName: GameStarted
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!4 &1141461232
 Transform:
   m_ObjectHideFlags: 0
@@ -3007,12 +3019,14 @@ MonoBehaviour:
   _wrongTranscript: {fileID: 664763239}
   keystrokesText: {fileID: 1490038746}
   score: {fileID: 1074484506}
+  words: {fileID: 11400000, guid: dc81db3d2b716b5458a617cf770bc131, type: 2}
   listOfResources:
   - {fileID: 11400000, guid: fb2a9ad09a000fc418f356f7b35f7361, type: 2}
   - {fileID: 11400000, guid: 52ba3b615092c814fb4b9110482b315b, type: 2}
   - {fileID: 11400000, guid: 31d71e09bad116b4b9d5c7160648660d, type: 2}
   currentLanguage: English
   allWordsTyped: []
+  spawner: {fileID: 0}
 --- !u!4 &1216612607
 Transform:
   m_ObjectHideFlags: 0
@@ -3439,6 +3453,36 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1323754021}
   m_CullTransparentMesh: 1
+--- !u!1 &1332697717
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1332697718}
+  m_Layer: 0
+  m_Name: SpawnPosition
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1332697718
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1332697717}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 6.05, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 9
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1378246832
 GameObject:
   m_ObjectHideFlags: 0
@@ -3872,6 +3916,70 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1599566719}
   m_CullTransparentMesh: 1
+--- !u!1 &1629761272
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1629761275}
+  - component: {fileID: 1629761274}
+  - component: {fileID: 1629761273}
+  m_Layer: 0
+  m_Name: FallingObjectSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1629761273
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1629761272}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d366f9e14b170f04cab0aba6e9827142, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pools:
+  - {fileID: 11400000, guid: 46fb4ce231b4e6d448666bf5ceb5b66e, type: 2}
+--- !u!114 &1629761274
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1629761272}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d8a416819f14034ab0560cda0cb1489, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spawnSpeed: 10
+  spawnPosition: {fileID: 1332697718}
+  gameStarted: {fileID: 11400000, guid: 86e7a09856b39e747944ec259bc4cb0b, type: 2}
+  xMin: -2
+  xMax: 2
+  words: {fileID: 11400000, guid: dc81db3d2b716b5458a617cf770bc131, type: 2}
+--- !u!4 &1629761275
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1629761272}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 10
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1662417809
 GameObject:
   m_ObjectHideFlags: 0
@@ -4003,17 +4111,17 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1216612606}
-        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
-        m_MethodName: HiglightText
-        m_Mode: 1
+      - m_Target: {fileID: 1629761274}
+        m_TargetAssemblyTypeName: ObjectSpawner, Assembly-CSharp
+        m_MethodName: GameStarted
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
-          m_BoolArgument: 0
+          m_BoolArgument: 1
         m_CallState: 2
   m_OnDeselect:
     m_PersistentCalls:
@@ -4030,18 +4138,6 @@ MonoBehaviour:
       - m_Target: {fileID: 1216612606}
         m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
         m_MethodName: CheckText
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1141461231}
-        m_TargetAssemblyTypeName: Timer, Assembly-CSharp
-        m_MethodName: StartTimer
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
