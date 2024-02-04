@@ -8,6 +8,8 @@ public class Asteroid : MonoBehaviour, IPooledObject, IFallingObject
     [SerializeField]
     private TMP_Text wordText;
 
+    [SerializeField]
+    private TMP_Text wrongText;
     public void OnObjectSpawned()
     {
 
@@ -23,4 +25,20 @@ public class Asteroid : MonoBehaviour, IPooledObject, IFallingObject
     {
         wordText.text = text;
     }
+
+    public string GetText()
+    {
+        return wordText.text;
+    }
+    
+    public void SetWrongText(string text)
+    {
+        wrongText.text = text;
+    }
+
+    public string GetWrongText()
+    {
+        return wrongText.text;
+    }
+
 }

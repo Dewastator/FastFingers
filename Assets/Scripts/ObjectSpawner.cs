@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class ObjectSpawner : MonoBehaviour
 {
@@ -15,6 +16,8 @@ public class ObjectSpawner : MonoBehaviour
     public ListOfStrings words;
     private IntValue wordIndex;
     private int i;
+    public ListOfGameObjects fallingObjects;
+    public UnityEvent GameStartedEvent;
     // Start is called before the first frame update
     void Start()
     {
@@ -28,9 +31,10 @@ public class ObjectSpawner : MonoBehaviour
         {
             if (spawnTime < Time.time)
             {
-                spawnTime += Time.deltaTime + spawnSpeed;
+                spawnTime += Time.time + spawnSpeed;
                 var go = ObjectPooler.Instance.SpawnFromPool("Asteroid2", new Vector2(Random.Range(xMin, xMax), spawnPosition.position.y), spawnPosition.rotation);
                 go.GetComponent<IFallingObject>().SetText(words.list[i]);
+                fallingObjects.list[i] = go;
                 i++;
             }
         }
@@ -38,6 +42,10 @@ public class ObjectSpawner : MonoBehaviour
 
     public void GameStarted(bool value)
     {
+        if(!gameStarted.value)
+        {
+            GameStartedEvent.Invoke();
+        }
         gameStarted.value = value;
     }
     

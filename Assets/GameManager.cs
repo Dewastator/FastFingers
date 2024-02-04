@@ -46,8 +46,8 @@ public class GameManager : MonoBehaviour
     public List<string> allWordsTyped = new List<string>();
     int falseIndex;
     bool isWrongText;
-    [SerializeField]
-    ObjectSpawner spawner;
+
+    public ListOfGameObjects fallingObjects;
 
     public IFallingObject currentObject;
     private void Awake()
@@ -81,7 +81,10 @@ public class GameManager : MonoBehaviour
         _currentWord = words.list[0];
         originalTextPosition = _transcript.transform.localPosition;
     }
-
+    public void SetCurrentObject()
+    {
+        currentObject = fallingObjects.list[0].GetComponent<IFallingObject>();
+    }
     private void PopulateChars()
     {
         _currChars = _currentWord.ToCharArray();
@@ -117,7 +120,6 @@ public class GameManager : MonoBehaviour
             falseIndex = 0;
             isWrongText = false;
         }
-        NewLine();
     }
 
     private void HighlightText()
@@ -144,25 +146,14 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void NewLine()
-    {
-        if (_transcript.textInfo.lineInfo[lineIndex].characterCount == chars.Count())
-        {
-            lineIndex++;
-            chars = new List<char>();
-            _transcript.transform.localPosition = new Vector2(_transcript.transform.localPosition.x, _transcript.transform.localPosition.y + 60f);
-            _wrongTranscript.transform.localPosition = new Vector2(_wrongTranscript.transform.localPosition.x, _wrongTranscript.transform.localPosition.y + 60f);
-        }
-    }
-
     private void PaintWord(bool correct)
     {
         if (correct)
         {
             if(firstWord != 0)
-                _transcript.text = ReplaceFirstOccurrence(_transcript.text, " "+ words.list[0], "<color=green> " + words.list[0] + "</color>");
+                currentObject.SetText(ReplaceFirstOccurrence(currentObject.GetText(), " "+ words.list[0], "<color=green> " + words.list[0] + "</color>"));
             else
-                _transcript.text = ReplaceFirstOccurrence(_transcript.text, words.list[0], "<color=green>" + words.list[0] + "</color>");
+                currentObject.SetText(ReplaceFirstOccurrence(currentObject.GetText(), " " + words.list[0], "<color=green> " + words.list[0] + "</color>"));
 
             score.correctWords++;
             allCorrectWords.Append(words.list[0] + " ");
@@ -171,13 +162,13 @@ public class GameManager : MonoBehaviour
         else
         {
             if (firstWord != 0)
-                _transcript.text = ReplaceFirstOccurrence(_transcript.text, " " + words.list[0], "<color=red> " + words.list[0] + "</color>");
+                currentObject.SetText(ReplaceFirstOccurrence(currentObject.GetText(), " " + words.list[0], "<color=green> " + words.list[0] + "</color>"));
             else
-                _transcript.text = ReplaceFirstOccurrence(_transcript.text, words.list[0], "<color=red>" + words.list[0] + "</color>");
+                currentObject.SetText(ReplaceFirstOccurrence(currentObject.GetText(), " " + words.list[0], "<color=green> " + words.list[0] + "</color>"));
 
             score.wrongWords++;
             allFalseWords.Append(_playerInput.text + " ");
-            _wrongTranscript.text = ReplaceFirstOccurrence(_wrongTranscript.text, "<mark=#FF0000>" + words.list[0] + "</mark>", words.list[0]);
+            currentObject.SetWrongText(ReplaceFirstOccurrence(currentObject.GetWrongText(), "<mark=#FF0000>" + words.list[0] + "</mark>", words.list[0]));
 
         }
 

@@ -3026,7 +3026,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 31d71e09bad116b4b9d5c7160648660d, type: 2}
   currentLanguage: English
   allWordsTyped: []
-  spawner: {fileID: 0}
+  fallingObjects: {fileID: 11400000, guid: 5a8fa4e05cf824d4c8f481d15114ea11, type: 2}
 --- !u!4 &1216612607
 Transform:
   m_ObjectHideFlags: 0
@@ -3966,6 +3966,10 @@ MonoBehaviour:
   xMin: -2
   xMax: 2
   words: {fileID: 11400000, guid: dc81db3d2b716b5458a617cf770bc131, type: 2}
+  fallingObjects: {fileID: 11400000, guid: 5a8fa4e05cf824d4c8f481d15114ea11, type: 2}
+  GameStartedEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &1629761275
 Transform:
   m_ObjectHideFlags: 0
