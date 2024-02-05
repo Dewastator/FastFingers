@@ -1029,6 +1029,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
+      - m_Target: {fileID: 1216612606}
+        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
+        m_MethodName: GameStarted
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
 --- !u!114 &352861590
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3026,6 +3038,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 31d71e09bad116b4b9d5c7160648660d, type: 2}
   currentLanguage: English
   allWordsTyped: []
+  gameStarted: {fileID: 11400000, guid: 86e7a09856b39e747944ec259bc4cb0b, type: 2}
   fallingObjects: {fileID: 11400000, guid: 5a8fa4e05cf824d4c8f481d15114ea11, type: 2}
 --- !u!4 &1216612607
 Transform:

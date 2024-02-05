@@ -31,22 +31,13 @@ public class ObjectSpawner : MonoBehaviour
         {
             if (spawnTime < Time.time)
             {
-                spawnTime += Time.time + spawnSpeed;
+                spawnTime = Time.time + spawnSpeed;
                 var go = ObjectPooler.Instance.SpawnFromPool("Asteroid2", new Vector2(Random.Range(xMin, xMax), spawnPosition.position.y), spawnPosition.rotation);
                 go.GetComponent<IFallingObject>().SetText(words.list[i]);
-                fallingObjects.list[i] = go;
+                fallingObjects.list.Add(go);
                 i++;
             }
         }
     }
 
-    public void GameStarted(bool value)
-    {
-        if(!gameStarted.value)
-        {
-            GameStartedEvent.Invoke();
-        }
-        gameStarted.value = value;
-    }
-    
 }

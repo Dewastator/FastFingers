@@ -46,7 +46,7 @@ public class GameManager : MonoBehaviour
     public List<string> allWordsTyped = new List<string>();
     int falseIndex;
     bool isWrongText;
-
+    public BoolValue gameStarted;
     public ListOfGameObjects fallingObjects;
 
     public IFallingObject currentObject;
@@ -77,9 +77,16 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        gameStarted.value = false;
+
         words.list = GetWords("English").Split(' ').ToList();
         _currentWord = words.list[0];
         originalTextPosition = _transcript.transform.localPosition;
+    }
+
+    public void GameStarted()
+    {
+        gameStarted.value = true;
     }
     public void SetCurrentObject()
     {
