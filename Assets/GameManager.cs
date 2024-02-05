@@ -22,15 +22,13 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private TMP_Text _wrongTranscript;
     [SerializeField]
-    private TMP_Text keystrokesText;
-    [SerializeField]
     Score score;
     private string _currentWord;
-    public ListOfStrings words;
+    private List<string> words = new List<string>();
     private int maxWords = 200;
     List<char> chars = new List<char>();
     char[] _currChars;
-    int i = 0;
+    int spaceIndex = 0;
     int lineIndex = 0;
     int firstWord;
     [SerializeField]
@@ -44,19 +42,18 @@ public class GameManager : MonoBehaviour
     StringBuilder allCorrectWords = new StringBuilder();
     StringBuilder allFalseWords = new StringBuilder();
     public List<string> allWordsTyped = new List<string>();
-    int falseIndex;
     bool isWrongText;
-    public BoolValue gameStarted;
-    public ListOfGameObjects fallingObjects;
+    bool gameStarted;
+    public UnityEvent TimeModeStartedEvent;
 
-    public IFallingObject currentObject;
     private void Awake()
     {
-        words.list = new List<string>();
-        foreach(TextResource text in listOfResources)
+        foreach (TextResource text in listOfResources)
         {
             textResources.Add(text.language, text);
         }
+        _transcript.text = GetWords("English");
+        _wrongTranscript.text = _transcript.text;
     }
     private string GetWords(string language)
     {
@@ -77,22 +74,12 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        gameStarted.value = false;
-
-        words.list = GetWords("English").Split(' ').ToList();
-        _currentWord = words.list[0];
+        words = _transcript.text.Split(' ').ToList();
+        _currentWord = words[0];
         originalTextPosition = _transcript.transform.localPosition;
     }
 
-    public void GameStarted()
-    {
-        gameStarted.value = true;
-    }
-    public void SetCurrentObject()
-    {
-        currentObject = fallingObjects.list[0].GetComponent<IFallingObject>();
-    }
-    private void PopulateChars()
+    private void SaveCharsForNewLineCheck()
     {
         _currChars = _currentWord.ToCharArray();
         foreach (char ch in _currChars)
@@ -101,55 +88,84 @@ public class GameManager : MonoBehaviour
 
         }
         chars.Add(' ');
+        NewLine();
+
     }
 
     public void CheckText()
     {
-        if (i > 0)
+        if (spaceIndex > 0) //Protecting twice text check after space or word submition
         {
-            i = 0;
+            spaceIndex = 0;
             return;
         }
         HighlightText();
-        if(!isStringEmpty(_playerInput.text) && !Input.GetKey(KeyCode.Backspace))
+        if (!isStringEmpty(_playerInput.text) && !Input.GetKey(KeyCode.Backspace))
         {
             score.allKeystrokes++;
-            keystrokesText.text = score.allKeystrokes.ToString();
+            if (!gameStarted)
+                StartGame();
+        }
+        else if(!Input.GetKey(KeyCode.Backspace))
+        {
+            _playerInput.text = "";
         }
         if (!isStringEmpty(_playerInput.text) && _playerInput.text[_playerInput.text.Length - 1] == ' ')
         {
-            i++;
+            spaceIndex++;
             PaintWord(_playerInput.text.Trim(_playerInput.text[_playerInput.text.Length - 1]) == _currentWord);
-            PopulateChars();
-            _playerInput.text = "";
-            words.list.RemoveAt(0);
-            _currentWord = words.list.Count > 0 ? words.list[0] : "";
-            falseIndex = 0;
-            isWrongText = false;
+            SaveCharsForNewLineCheck();
+            ResetTextAndSetCurrentWord();
         }
+    }
+
+    private void StartGame()
+    {
+        gameStarted = true;
+        TimeModeStartedEvent.Invoke();
+    }
+
+    private void ResetTextAndSetCurrentWord()
+    {
+        _playerInput.text = "";
+        words.RemoveAt(0);
+        _currentWord = words.Count > 0 ? words[0] : "";
+        isWrongText = false;
     }
 
     private void HighlightText()
     {
         if (!isStringEmpty(_playerInput.text) && _currentWord.Length >= _playerInput.text.Length && _playerInput.text[_playerInput.text.Length - 1] != _currentWord[_playerInput.text.Length - 1] && !isWrongText)
         {
-            _wrongTranscript.text = ReplaceFirstOccurrence(_wrongTranscript.text, words.list[0], "<mark=#FF0000>" + words.list[0] + "</mark>");
+            _wrongTranscript.text = ReplaceFirstOccurrence(_wrongTranscript.text, words[0], "<mark=#FF0000>" + words[0] + "</mark>");
             isWrongText = true;
         }
         if (_playerInput.text.Length > _currentWord.Length && _playerInput.text[_playerInput.text.Length - 1] != ' ' && !isWrongText)
         {
-            _wrongTranscript.text = ReplaceFirstOccurrence(_wrongTranscript.text, words.list[0], "<mark=#FF0000>" + words.list[0] + "</mark>");
+            _wrongTranscript.text = ReplaceFirstOccurrence(_wrongTranscript.text, words[0], "<mark=#FF0000>" + words[0] + "</mark>");
             isWrongText = true;
         }
-        if (!isStringEmpty(_playerInput.text) && _currentWord.Length >= _playerInput.text.Length &&  _currentWord.Contains(_playerInput.text) && isWrongText && _currentWord[0] == _playerInput.text[0])
+        if (!isStringEmpty(_playerInput.text) && _currentWord.Length >= _playerInput.text.Length && _currentWord.Contains(_playerInput.text) && isWrongText && _currentWord[0] == _playerInput.text[0])
         {
-            _wrongTranscript.text = ReplaceFirstOccurrence(_wrongTranscript.text, "<mark=#FF0000>" + words.list[0] + "</mark>", words.list[0]);
+            _wrongTranscript.text = ReplaceFirstOccurrence(_wrongTranscript.text, "<mark=#FF0000>" + words[0] + "</mark>", words[0]);
             isWrongText = false;
         }
         if (isStringEmpty(_playerInput.text) && isWrongText)
         {
-            _wrongTranscript.text = ReplaceFirstOccurrence(_wrongTranscript.text, "<mark=#FF0000>" + words.list[0] + "</mark>", words.list[0]);
+            _wrongTranscript.text = ReplaceFirstOccurrence(_wrongTranscript.text, "<mark=#FF0000>" + words[0] + "</mark>", words[0]);
             isWrongText = false;
+        }
+    }
+
+    private void NewLine()
+    {
+        //Comparing number of typed chars submitted, with TMP chars in current line to create a new line
+        if (_transcript.textInfo.lineInfo[lineIndex].characterCount == chars.Count())
+        {
+            lineIndex++;
+            chars = new List<char>();
+            _transcript.transform.localPosition = new Vector2(_transcript.transform.localPosition.x, _transcript.transform.localPosition.y + 60f);
+            _wrongTranscript.transform.localPosition = new Vector2(_wrongTranscript.transform.localPosition.x, _wrongTranscript.transform.localPosition.y + 60f);
         }
     }
 
@@ -157,25 +173,25 @@ public class GameManager : MonoBehaviour
     {
         if (correct)
         {
-            if(firstWord != 0)
-                currentObject.SetText(ReplaceFirstOccurrence(currentObject.GetText(), " "+ words.list[0], "<color=green> " + words.list[0] + "</color>"));
+            if (firstWord != 0)
+                _transcript.text = ReplaceFirstOccurrence(_transcript.text, " " + words[0], "<color=green> " + words[0] + "</color>");
             else
-                currentObject.SetText(ReplaceFirstOccurrence(currentObject.GetText(), " " + words.list[0], "<color=green> " + words.list[0] + "</color>"));
+                _transcript.text = ReplaceFirstOccurrence(_transcript.text, words[0], "<color=green>" + words[0] + "</color>");
 
             score.correctWords++;
-            allCorrectWords.Append(words.list[0] + " ");
+            allCorrectWords.Append(words[0] + " ");
 
         }
         else
         {
             if (firstWord != 0)
-                currentObject.SetText(ReplaceFirstOccurrence(currentObject.GetText(), " " + words.list[0], "<color=green> " + words.list[0] + "</color>"));
+                _transcript.text = ReplaceFirstOccurrence(_transcript.text, " " + words[0], "<color=red> " + words[0] + "</color>");
             else
-                currentObject.SetText(ReplaceFirstOccurrence(currentObject.GetText(), " " + words.list[0], "<color=green> " + words.list[0] + "</color>"));
+                _transcript.text = ReplaceFirstOccurrence(_transcript.text, words[0], "<color=red>" + words[0] + "</color>");
 
             score.wrongWords++;
             allFalseWords.Append(_playerInput.text + " ");
-            currentObject.SetWrongText(ReplaceFirstOccurrence(currentObject.GetWrongText(), "<mark=#FF0000>" + words.list[0] + "</mark>", words.list[0]));
+            _wrongTranscript.text = ReplaceFirstOccurrence(_wrongTranscript.text, "<mark=#FF0000>" + words[0] + "</mark>", words[0]);
 
         }
 
@@ -184,8 +200,7 @@ public class GameManager : MonoBehaviour
 
     public bool isStringEmpty(string a)
     {
-        
-        return a.Length == 0;
+        return a.Trim().Length == 0;
     }
 
     public static string ReplaceFirstOccurrence(string Source, string Find, string Replace)
@@ -198,12 +213,8 @@ public class GameManager : MonoBehaviour
     public void EvaluateScore()
     {
         score.allKeystrokes -= _playerInput.text.Length;
-        score.wpm = (((double)allCorrectWords.Length / 5) - (double)allFalseWords.Length) ;
+        score.wpm = (((double)allCorrectWords.Length / 5) - (double)allFalseWords.Length);
         score.accuracy = ((float)allCorrectWords.Length / score.allKeystrokes) * 100;
-        Debug.Log((double)allCorrectWords.Length);
-        Debug.Log((double)allFalseWords.Length);
-        Debug.Log(score.allKeystrokes);
-        Debug.Log(score.correctWords);
         allWordsTyped.Add(allCorrectWords.ToString());
         score.SetScore();
     }
@@ -219,8 +230,8 @@ public class GameManager : MonoBehaviour
         _transcript.text = GetWords(currentLanguage);
         _wrongTranscript.text = _transcript.text;
         score.ResetScore();
-        words.list = _transcript.text.Split(' ').ToList();
-        _currentWord = words.list[0];
+        words = _transcript.text.Split(' ').ToList();
+        _currentWord = words[0];
         firstWord = 0;
         lineIndex = 0;
         chars = new List<char>();
@@ -232,7 +243,6 @@ public class GameManager : MonoBehaviour
         {
             _playerInput.text = "";
         }
+        gameStarted = false;
     }
-
-    
 }
