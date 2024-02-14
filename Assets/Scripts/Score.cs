@@ -20,6 +20,7 @@ public class Score : MonoBehaviour
     public float correctKeystrokes;
     public float allKeystrokes;
     public float accuracy;
+    public int uncorrectedErrors;
     public void SetScore()
     {
         wpmText.text = "<color=green>" + System.Math.Round(wpm).ToString() + "WPM"+ "</color>";
@@ -31,7 +32,7 @@ public class Score : MonoBehaviour
 
     public void ResetScore()
     {
-        correctWords = wrongWords = accuracy = allKeystrokes = correctKeystrokes = 0;
+        correctWords = wrongWords = accuracy = allKeystrokes = correctKeystrokes = uncorrectedErrors = 0;
         wpm = 0;
     }
 }
