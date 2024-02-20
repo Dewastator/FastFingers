@@ -7,10 +7,6 @@ public class DestroyAsteroid : MonoBehaviour {
 	private Animator anim;
 	private GigaGameManager gm;
 	
-	public void KillAsteroid()
-	{
-		Destroy (gameObject);
-	}
 
 	void Start() {
 		anim = GetComponent<Animator>();
