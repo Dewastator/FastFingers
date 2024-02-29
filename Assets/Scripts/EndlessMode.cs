@@ -19,12 +19,12 @@ public class EndlessMode : MonoBehaviour
     [SerializeField]
     protected TMP_InputField _playerInput;
     [SerializeField]
-    Transform objectSpawner;
+    ObjectSpawner objectSpawner;
 
     [SerializeField]
     private GameObject objectVFX;
 
-    public ListOfStrings words;
+    public ListOfStrings wordsList;
     private string[] allLines;
     int spaceIndex = 0;
     protected string _currentWord;
@@ -45,15 +45,17 @@ public class EndlessMode : MonoBehaviour
     private EndlessModeScore score;
     private Combo combo;
 
+    private readonly HashSet<string> words = new HashSet<string>();
 
     // Start is called before the first frame update
     void Start()
     {
         score = GetComponent<EndlessModeScore>();
         combo = GetComponent<Combo>();
-        words.list.Clear();
-        words.list = GetWords().Split(' ').ToList();
-        _currentWord = words.list[0];
+        words.Clear();
+        wordsList.list.Clear();
+        SetWords();
+        wordsList.list = words.ToList();
         StartCoroutine(StartEndlessMode());
         objectVFX.SetActive(false);
 
@@ -67,21 +69,18 @@ public class EndlessMode : MonoBehaviour
         OnEndlessModeStarted.Invoke();
     }
 
-    private string GetWords()
+    private void SetWords()
     {
         allLines = textResource.text.Split();
 
-        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < maxNumberOfWords; i++)
         {
             var randWord = allLines[UnityEngine.Random.Range(0, allLines.Length)] + " ";
-            if (!sb.ToString().Contains(randWord) && randWord.Length <= 8)
+            if (!words.Contains(randWord) && randWord.Length <= 8)
             {
-                sb.Append(randWord);
+                words.Add(randWord.Trim());
             }
         }
-
-        return sb.ToString();
     }
 
     public void CheckText()
@@ -89,15 +88,12 @@ public class EndlessMode : MonoBehaviour
         if (!canSpawn.value)
             return;
 
-        if (currentObject != null && !currentObject.Enabled() || currentObject.GetText() == "")
-            return;
-
         if (spaceIndex > 0) //Protecting twice text check after space at word submition
         {
             spaceIndex = 0;
             return;
         }
-        HighlightText();
+        //HighlightText();
         
         if (_playerInput.text.IsStringEmpty() && !Input.GetKey(KeyCode.Backspace))
         {
@@ -106,15 +102,13 @@ public class EndlessMode : MonoBehaviour
         if (!_playerInput.text.IsStringEmpty() && _playerInput.text[_playerInput.text.Length - 1] == ' ')
         {
             spaceIndex++;
-            HandleSubmittion(_playerInput.text.Trim(_playerInput.text[_playerInput.text.Length - 1]) == _currentWord);
+            HandleSubmittion(words.Contains(_playerInput.text.Trim()));
         }
     }
 
-    private void ResetTextAndSetCurrentWord()
+    private void ResetTextInput()
     {
         _playerInput.text = "";
-        wordIndex++;
-        _currentWord = words.list[wordIndex];
         isWrongText = false;
     }
 
@@ -138,8 +132,6 @@ public class EndlessMode : MonoBehaviour
 
             comboAmount = 0;
 
-            //For now just destroy
-            OnTakeHit.Invoke();
         }
         HandleObjectsDeath(correct);
     }
@@ -149,79 +141,78 @@ public class EndlessMode : MonoBehaviour
 
         for (int i = 0; i < 20; i++)
         {
-            var go = objectSpawner.GetChild(i).gameObject;
+            var go = objectSpawner.transform.GetChild(i).gameObject;
             if (go.activeInHierarchy && !go.GetComponent<IFallingObject>().IsAlreadyDead())
             {
-                HandleObjectsDeath(true);
+                go.GetComponent<IFallingObject>().Destroy(true);
+                score.IncreaseScore();
             }
         }
         canSpawn.value = true;
-
+        ResetTextInput();
     }
 
-    public void HandleObjectsDeath(bool correct)
+    public void HandleObjectsDeath(bool correct, bool combo = false)
     {
 
-        objectVFX.transform.SetParent(null);
-        objectVFX.SetActive(false);
-        currentObject.Destroy(correct);
-
+        //objectVFX.transform.SetParent(null);
+        //objectVFX.SetActive(false);
+        
         if (correct)
         {
             score.IncreaseScore();
+
+            currentObject = objectSpawner.spawnedFallingObjects[_playerInput.text.Trim()];
+
+            currentObject.Destroy(correct);
         }
 
-        if (objectIndex == objectSpawner.childCount / 2)
-            objectSpawner.GetComponent<ObjectSpawner>().spawnSpeed -= 0.2f;
+        //if (objectIndex == objectSpawner.childCount / 2)
+        //    objectSpawner.GetComponent<ObjectSpawner>().spawnSpeed -= 0.2f;
 
-        if (objectIndex == objectSpawner.childCount - 1)
-        {
-            objectIndex = -1;
-        }
+        //if (objectIndex == objectSpawner.childCount - 1)
+        //{
+        //    objectIndex = -1;
+        //}
 
         objectIndex++;
-        currentObject = objectSpawner.GetChild(objectIndex).gameObject.GetComponent<IFallingObject>();
+        if(objectIndex == 10)
+        {
+            objectSpawner.spawnSpeed -= 0.2f;
+            objectIndex = 0;
+        }
 
-        objectVFX.transform.SetParent(objectSpawner.GetChild(objectIndex));
-        objectVFX.transform.localPosition = new Vector3(0.07f, -0.07f, 0);
-        objectVFX.SetActive(true);
+        
 
-        ResetTextAndSetCurrentWord();
+        //objectVFX.transform.SetParent(objectSpawner.GetChild(objectIndex));
+        //objectVFX.transform.localPosition = new Vector3(0.07f, -0.07f, 0);
+        //objectVFX.SetActive(true);
+
+        ResetTextInput();
     }
 
     private void HighlightText()
     {
-        if (!_playerInput.text.IsStringEmpty() && _currentWord.Length >= _playerInput.text.Length && _playerInput.text[_playerInput.text.Length - 1] != _currentWord[_playerInput.text.Length - 1] && !isWrongText)
-        {
-            currentObject.SetWrongText(DataHelper.ReplaceFirstOccurrence(currentObject.GetWrongText(), words.list[wordIndex], "<mark=#FF0000>" + words.list[wordIndex] + "</mark>"));
-            isWrongText = true;
-        }
-        if (_playerInput.text.Length > _currentWord.Length && _playerInput.text[_playerInput.text.Length - 1] != ' ' && !isWrongText)
-        {
-            currentObject.SetWrongText(DataHelper.ReplaceFirstOccurrence(currentObject.GetWrongText(), words.list[wordIndex], "<mark=#FF0000>" + words.list[wordIndex] + "</mark>"));
-            isWrongText = true;
-        }
-        if (!_playerInput.text.IsStringEmpty() && _currentWord.Length >= _playerInput.text.Length && _currentWord.Contains(_playerInput.text) && isWrongText && _currentWord[0] == _playerInput.text[0])
-        {
-            currentObject.SetWrongText(DataHelper.ReplaceFirstOccurrence(currentObject.GetWrongText(), "<mark=#FF0000>" + words.list[wordIndex] + "</mark>", words.list[wordIndex]));
-            isWrongText = false;
-        }
-        if (_playerInput.text.IsStringEmpty() && isWrongText)
-        {
-            currentObject.SetWrongText(DataHelper.ReplaceFirstOccurrence(currentObject.GetWrongText(), "<mark=#FF0000>" + words.list[wordIndex] + "</mark>", words.list[wordIndex]));
-            isWrongText = false;
-        }
+        //if (!_playerInput.text.IsStringEmpty() && _currentWord.Length >= _playerInput.text.Length && _playerInput.text[_playerInput.text.Length - 1] != _currentWord[_playerInput.text.Length - 1] && !isWrongText)
+        //{
+        //    currentObject.SetWrongText(DataHelper.ReplaceFirstOccurrence(currentObject.GetWrongText(), words.list[wordIndex], "<mark=#FF0000>" + words.list[wordIndex] + "</mark>"));
+        //    isWrongText = true;
+        //}
+        //if (_playerInput.text.Length > _currentWord.Length && _playerInput.text[_playerInput.text.Length - 1] != ' ' && !isWrongText)
+        //{
+        //    currentObject.SetWrongText(DataHelper.ReplaceFirstOccurrence(currentObject.GetWrongText(), words.list[wordIndex], "<mark=#FF0000>" + words.list[wordIndex] + "</mark>"));
+        //    isWrongText = true;
+        //}
+        //if (!_playerInput.text.IsStringEmpty() && _currentWord.Length >= _playerInput.text.Length && _currentWord.Contains(_playerInput.text) && isWrongText && _currentWord[0] == _playerInput.text[0])
+        //{
+        //    currentObject.SetWrongText(DataHelper.ReplaceFirstOccurrence(currentObject.GetWrongText(), "<mark=#FF0000>" + words.list[wordIndex] + "</mark>", words.list[wordIndex]));
+        //    isWrongText = false;
+        //}
+        //if (_playerInput.text.IsStringEmpty() && isWrongText)
+        //{
+        //    currentObject.SetWrongText(DataHelper.ReplaceFirstOccurrence(currentObject.GetWrongText(), "<mark=#FF0000>" + words.list[wordIndex] + "</mark>", words.list[wordIndex]));
+        //    isWrongText = false;
+        //}
     }
                                                 
-    public void SetCurrentFallingObject()
-    {
-        if (currentObject == null)
-        {
-            currentObject = objectSpawner.GetChild(0).GetComponent<IFallingObject>();
-            objectVFX.SetActive(true);
-            objectVFX.transform.SetParent(objectSpawner.GetChild(0));
-            objectVFX.transform.localPosition = new Vector3(0.07f, -0.07f, 0);
-
-        }
-    }
 }

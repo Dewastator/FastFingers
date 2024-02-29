@@ -37,7 +37,7 @@ public class Asteroid : MonoBehaviour, IPooledObject, IFallingObject
     }
     private void OnEnable()
     {
-        Speed += 0.05f;
+        Speed += 0.1f;
     }
     public void Destroy(bool correct)
     {
@@ -59,7 +59,7 @@ public class Asteroid : MonoBehaviour, IPooledObject, IFallingObject
     private void DeactivateObject()
     {
         gameObject.SetActive(false);
-        isEnabled = false;
+        Enable(false);
         transform.position = Vector3.zero;
         canvas.SetActive(true);
         isDead = false;
@@ -112,5 +112,10 @@ public class Asteroid : MonoBehaviour, IPooledObject, IFallingObject
         mySequence
             .Insert(0.2f, pointText.DOColor(new Color(1f, 1f, 1f, 0f), 0.2f))
             .Insert(0, pointText.transform.DOMoveY(pointText.transform.position.y + 0.2f, 0.4f));
+    }
+
+    public void Enable(bool enable)
+    {
+        isEnabled = enable;
     }
 }

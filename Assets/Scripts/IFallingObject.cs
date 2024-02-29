@@ -14,4 +14,5 @@ public interface IFallingObject
 
     public bool IsAlreadyDead();
 
+    public void Enable(bool enable);
 }

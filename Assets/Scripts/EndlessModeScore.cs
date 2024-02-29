@@ -16,7 +16,6 @@ public class EndlessModeScore : MonoBehaviour
     {
         currentScore += 1;
         scoreText.text = currentScore.ToString();
-
     }
 
     
